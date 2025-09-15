@@ -65,7 +65,8 @@ fun RecoverScreen(navController: NavHostController, usuariosPredeterminados: Sna
             singleLine = true,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 24.dp),
+                .padding(bottom = 24.dp)
+                .semantics { contentDescription = "Campo para agregar tu usario" },
             shape = RoundedCornerShape(16.dp),
         )
 
@@ -79,7 +80,8 @@ fun RecoverScreen(navController: NavHostController, usuariosPredeterminados: Sna
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 24.dp),
+                .padding(bottom = 24.dp)
+                .semantics { contentDescription = "Campo para agregar tu nueva contraseña" },
             shape = RoundedCornerShape(16.dp),
         )
         OutlinedTextField(
@@ -91,7 +93,8 @@ fun RecoverScreen(navController: NavHostController, usuariosPredeterminados: Sna
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 24.dp),
+                .padding(bottom = 24.dp)
+                .semantics { contentDescription = "Campo para repetir tu nueva contraseña" },
             shape = RoundedCornerShape(16.dp),
         )
 
@@ -110,7 +113,8 @@ fun RecoverScreen(navController: NavHostController, usuariosPredeterminados: Sna
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 30.dp),
+                .padding(bottom = 30.dp)
+                .semantics { contentDescription = "Boton para recuperar contraseña" },
             shape = RoundedCornerShape(16.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = PersonalTheme.primaryColor,

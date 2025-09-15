@@ -65,7 +65,8 @@ fun HomeScreen(navController: NavHostController, usuariosPredeterminados: Snapsh
             singleLine = true,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 24.dp),
+                .padding(bottom = 24.dp)
+                .semantics { contentDescription = "Campo para agregar tu usario" },
             shape = RoundedCornerShape(16.dp),
         )
 
@@ -79,23 +80,25 @@ fun HomeScreen(navController: NavHostController, usuariosPredeterminados: Snapsh
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 24.dp),
+                .padding(bottom = 24.dp)
+                .semantics { contentDescription = "Campo para agregar tu contraseña" },
+
             shape = RoundedCornerShape(16.dp),
         )
 
         //Boton de login
         Button(
             {
-                if(usuariosPredeterminados.any{it.first == user && it.second == password}){
+                if (usuariosPredeterminados.any { it.first == user && it.second == password }) {
                     navController.navigate("welcome")
-                }
-                else{
+                } else {
                     navController.navigate("login")
                 }
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 30.dp),
+                .padding(bottom = 30.dp)
+                .semantics { contentDescription = "Boton para iniciar sesión" },
             shape = RoundedCornerShape(16.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = PersonalTheme.primaryColor,
@@ -115,7 +118,9 @@ fun HomeScreen(navController: NavHostController, usuariosPredeterminados: Snapsh
                 color = PersonalTheme.primaryColor,
                 fontFamily = PersonalTheme.TypeText,
                 fontSize = 12.sp,
-                modifier = Modifier.clickable { navController.navigate("register") },
+                modifier = Modifier
+                    .clickable { navController.navigate("register") }
+                    .semantics { contentDescription = "Link para registrase" },
                 style = TextStyle(textDecoration = TextDecoration.Underline)
             )
 
@@ -125,7 +130,9 @@ fun HomeScreen(navController: NavHostController, usuariosPredeterminados: Snapsh
                 color = PersonalTheme.primaryColor,
                 fontFamily = PersonalTheme.TypeText,
                 fontSize = 12.sp,
-                modifier = Modifier.clickable { navController.navigate("recover")},
+                modifier = Modifier
+                    .clickable { navController.navigate("recover")}
+                    .semantics { contentDescription = "Link para recuperar contraseña" },
                 style = TextStyle(textDecoration = TextDecoration.Underline)
             )
 

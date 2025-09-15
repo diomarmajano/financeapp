@@ -65,7 +65,8 @@ fun RegisterScreen(navController: NavHostController, usuariosPredeterminados: Sn
             singleLine = true,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 24.dp),
+                .padding(bottom = 24.dp)
+                .semantics { contentDescription = "Campo para crear tu nombre de usuario" },
             shape = RoundedCornerShape(16.dp),
         )
 
@@ -79,7 +80,8 @@ fun RegisterScreen(navController: NavHostController, usuariosPredeterminados: Sn
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 24.dp),
+                .padding(bottom = 24.dp)
+                .semantics { contentDescription = "Campo para crear tu contraseña" },
             shape = RoundedCornerShape(16.dp),
         )
         OutlinedTextField(
@@ -91,7 +93,8 @@ fun RegisterScreen(navController: NavHostController, usuariosPredeterminados: Sn
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 24.dp),
+                .padding(bottom = 24.dp)
+                .semantics { contentDescription = "Campo para repetir tu nueva contraseña" },
             shape = RoundedCornerShape(16.dp),
         )
         val context = LocalContext.current
@@ -129,7 +132,8 @@ fun RegisterScreen(navController: NavHostController, usuariosPredeterminados: Sn
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 30.dp),
+                .padding(bottom = 30.dp)
+                .semantics { contentDescription = "Boton para registrarte" },
             shape = RoundedCornerShape(16.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = PersonalTheme.primaryColor,

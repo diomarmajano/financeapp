@@ -55,7 +55,8 @@ fun WelcomeScreen(navController: NavHostController) {
             { navController.navigate("login")},
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 30.dp),
+                .padding(bottom = 30.dp)
+                .semantics { contentDescription = "Boton para cerrar sesión" },
             shape = RoundedCornerShape(16.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = PersonalTheme.primaryColor,
