@@ -130,7 +130,7 @@ fun RecoverScreen(navController: NavHostController, usuariosPredeterminados: Sna
         ) {
             //Link login
             Text(
-                text = "Ir al iniicio",
+                text = "Ir al inicio",
                 color = PersonalTheme.primaryColor,
                 fontFamily = PersonalTheme.TypeText,
                 fontSize = 12.sp,
