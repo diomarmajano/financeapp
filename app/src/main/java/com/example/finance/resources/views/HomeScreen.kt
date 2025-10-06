@@ -132,7 +132,7 @@ fun HomeScreen(
                     contentColor = PersonalTheme.TextPrimary
             )
         ) {
-            Text("¿Quieres saber donde estas🔎?")
+            Text("¿Quieres saber donde estas?")
         }
 
         Row(
