@@ -32,7 +32,7 @@ fun MiUbicacion(context: Context,   navController: NavController) {
         permission = Manifest.permission.ACCESS_FINE_LOCATION
     )
 
-    var locationText by remember { mutableStateOf("Ver donde me encuentro 🙈") }
+    var locationText by remember { mutableStateOf("Ver donde me encuentro") }
 
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
 
@@ -65,7 +65,7 @@ fun MiUbicacion(context: Context,   navController: NavController) {
             ),
             modifier = Modifier.padding(vertical = 16.dp)
         ) {
-            Text("Ver mi ubicacion 📍")
+            Text("Ver mi ubicacion")
         }
         Button(
             onClick = {
