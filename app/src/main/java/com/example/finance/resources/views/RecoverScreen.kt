@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
@@ -31,24 +32,33 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.finance.data.UsuariosDao
 import com.example.finance.ui.theme.PersonalTheme
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
-fun RecoverScreen(navController: NavHostController, usuariosPredeterminados: SnapshotStateList<Pair<String, String>>, modifier: Modifier = Modifier) {
-    var NewUser by remember { mutableStateOf("") }
-    var NewPassword by remember { mutableStateOf("") }
-    var RepeatPassword by remember { mutableStateOf("") }
+fun RecoverScreen(
+    navController: NavHostController,
+    usuarioDao: UsuariosDao,
+    modifier: Modifier = Modifier
+) {
+    var username by remember { mutableStateOf("") }
+    var newPassword by remember { mutableStateOf("") }
+    var repeatPassword by remember { mutableStateOf("") }
+
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(PersonalTheme.backgroundPrimary)
             .padding(24.dp)
-            .semantics { contentDescription = "Pantalla de recuperacin de contareseña" },
+            .semantics { contentDescription = "Pantalla de recuperación de contraseña" },
         verticalArrangement = Arrangement.Center
-    )
-    {
-        //Mensaje principal de la pantalla de ´recuperacion
+    ) {
         Text(
             text = "Recuperar contraseña",
             color = PersonalTheme.primaryColor,
@@ -58,39 +68,39 @@ fun RecoverScreen(navController: NavHostController, usuariosPredeterminados: Sna
         )
 
         OutlinedTextField(
-            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = PersonalTheme.primaryColor),
-            value = NewUser,
-            onValueChange = { NewUser = it },
+            value = username,
+            onValueChange = { username = it },
             label = { Text("Usuario") },
             singleLine = true,
+            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = PersonalTheme.primaryColor),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 24.dp)
-                .semantics { contentDescription = "Campo para agregar tu usario" },
+                .semantics { contentDescription = "Campo para agregar tu usuario" },
             shape = RoundedCornerShape(16.dp),
         )
 
-        //inpun datos password
         OutlinedTextField(
-            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = PersonalTheme.primaryColor),
-            value = NewPassword,
-            onValueChange = { NewPassword = it },
+            value = newPassword,
+            onValueChange = { newPassword = it },
             label = { Text("Nueva contraseña") },
             singleLine = true,
             visualTransformation = PasswordVisualTransformation(),
+            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = PersonalTheme.primaryColor),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 24.dp)
                 .semantics { contentDescription = "Campo para agregar tu nueva contraseña" },
             shape = RoundedCornerShape(16.dp),
         )
+
         OutlinedTextField(
-            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = PersonalTheme.primaryColor),
-            value = RepeatPassword,
-            onValueChange = { RepeatPassword = it },
+            value = repeatPassword,
+            onValueChange = { repeatPassword = it },
             label = { Text("Repite la contraseña") },
             singleLine = true,
             visualTransformation = PasswordVisualTransformation(),
+            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = PersonalTheme.primaryColor),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 24.dp)
@@ -98,23 +108,32 @@ fun RecoverScreen(navController: NavHostController, usuariosPredeterminados: Sna
             shape = RoundedCornerShape(16.dp),
         )
 
-        val context = LocalContext.current
-        //Boton de login
         Button(
-            {
-                val usuario = usuariosPredeterminados.indexOfFirst { it.first == NewUser }
-                if(usuario != -1){
-                    usuariosPredeterminados[usuario] = NewUser to NewPassword
-                    Toast.makeText(context, "Contraseña actualizada", Toast.LENGTH_SHORT).show()
-                }
-                else{
-                    Toast.makeText(context, "!Usuario no encontrado, intenta de nuevo¡", Toast.LENGTH_SHORT).show()
+            onClick = {
+                coroutineScope.launch {
+                    val usuario = withContext(Dispatchers.IO) {
+                        usuarioDao.buscarPorNombre(username)
+                    }
+
+                    if (usuario != null) {
+                        if (newPassword == repeatPassword) {
+                            withContext(Dispatchers.IO) {
+                                usuarioDao.actualizarPassword(username, newPassword)
+                            }
+                            Toast.makeText(context, "Contraseña actualizada", Toast.LENGTH_SHORT).show()
+                            navController.navigate("login")
+                        } else {
+                            Toast.makeText(context, "Las contraseñas no coinciden", Toast.LENGTH_SHORT).show()
+                        }
+                    } else {
+                        Toast.makeText(context, "Usuario no encontrado", Toast.LENGTH_SHORT).show()
+                    }
                 }
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 30.dp)
-                .semantics { contentDescription = "Boton para recuperar contraseña" },
+                .semantics { contentDescription = "Botón para recuperar contraseña" },
             shape = RoundedCornerShape(16.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = PersonalTheme.primaryColor,
@@ -123,18 +142,17 @@ fun RecoverScreen(navController: NavHostController, usuariosPredeterminados: Sna
         ) {
             Text("Recuperar")
         }
+
         Row(
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            //Link login
             Text(
                 text = "Ir al inicio",
                 color = PersonalTheme.primaryColor,
                 fontFamily = PersonalTheme.TypeText,
                 fontSize = 12.sp,
-                modifier = Modifier.clickable { navController.navigate("login")},
+                modifier = Modifier.clickable { navController.navigate("login") },
                 style = TextStyle(textDecoration = TextDecoration.Underline)
             )
         }

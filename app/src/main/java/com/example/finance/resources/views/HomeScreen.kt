@@ -1,5 +1,6 @@
 package com.example.finance.resources.views
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -18,9 +19,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
@@ -29,23 +32,31 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.finance.data.UsuariosDao
 import com.example.finance.ui.theme.PersonalTheme
-
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 @Composable
-fun HomeScreen(navController: NavHostController, usuariosPredeterminados: SnapshotStateList<Pair<String, String>>, modifier: Modifier = Modifier) {
+fun HomeScreen(
+    navController: NavHostController,
+    usuarioDao: UsuariosDao,
+    modifier: Modifier = Modifier
+) {
     var user by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope() // usamos este
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(PersonalTheme.backgroundPrimary)
             .padding(24.dp)
             .semantics { contentDescription = "Pantalla principal" },
         verticalArrangement = Arrangement.Center
-    )
-    {
+    ) {
         //Mensaje principal de la pantalla de inicio
         Text(
             text = "Bienvenido, Ingresa tus credenciales",
@@ -55,51 +66,53 @@ fun HomeScreen(navController: NavHostController, usuariosPredeterminados: Snapsh
             modifier = Modifier.padding(bottom = 32.dp)
         )
 
-        //Campos para el login
-        //input datos usuario
+        // Input usuario
         OutlinedTextField(
-            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = PersonalTheme.primaryColor),
             value = user,
             onValueChange = { user = it },
             label = { Text("Usuario") },
             singleLine = true,
+            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = PersonalTheme.primaryColor),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 24.dp)
-                .semantics { contentDescription = "Campo para agregar tu usario" },
+                .semantics { contentDescription = "Campo para agregar tu usuario" },
             shape = RoundedCornerShape(16.dp),
         )
 
-        //inpun datos password
+        // Input password
         OutlinedTextField(
-            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = PersonalTheme.primaryColor),
             value = password,
             onValueChange = { password = it },
             label = { Text("Password") },
             singleLine = true,
             visualTransformation = PasswordVisualTransformation(),
+            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = PersonalTheme.primaryColor),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 24.dp)
                 .semantics { contentDescription = "Campo para agregar tu contraseña" },
-
             shape = RoundedCornerShape(16.dp),
         )
 
-        //Boton de login
+        // Botón de login
         Button(
-            {
-                if (usuariosPredeterminados.any { it.first == user && it.second == password }) {
-                    navController.navigate("welcome")
-                } else {
-                    navController.navigate("login")
+            onClick = {
+                coroutineScope.launch {
+                    val usuario = withContext(Dispatchers.IO) {
+                        usuarioDao.buscarPorCredenciales(user, password)
+                    }
+                    if (usuario != null) {
+                        Toast.makeText(context, "Bienvenido ${usuario.name}", Toast.LENGTH_SHORT).show()
+                        navController.navigate("Inicio")
+                    } else {
+                        Toast.makeText(context, "Usuario o contraseña incorrectos", Toast.LENGTH_SHORT).show()
+                    }
                 }
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 30.dp)
-                .semantics { contentDescription = "Boton para iniciar sesión" },
-            shape = RoundedCornerShape(16.dp),
+                .padding(vertical = 16.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = PersonalTheme.primaryColor,
                 contentColor = PersonalTheme.TextPrimary
@@ -107,12 +120,25 @@ fun HomeScreen(navController: NavHostController, usuariosPredeterminados: Snapsh
         ) {
             Text("Iniciar sesión")
         }
-        Row(
+        Button(
+            onClick = {
+                navController.navigate("buscar_dispositivo")
+            },
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .padding(vertical = 16.dp),
+            colors = ButtonDefaults.buttonColors(
+                    containerColor = PersonalTheme.primaryColor,
+                    contentColor = PersonalTheme.TextPrimary
+            )
+        ) {
+            Text("¿Quieres saber donde estas?")
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            //Link registro
             Text(
                 text = "¿Aun no te has registrado?",
                 color = PersonalTheme.primaryColor,
@@ -120,23 +146,20 @@ fun HomeScreen(navController: NavHostController, usuariosPredeterminados: Snapsh
                 fontSize = 12.sp,
                 modifier = Modifier
                     .clickable { navController.navigate("register") }
-                    .semantics { contentDescription = "Link para registrase" },
+                    .semantics { contentDescription = "Link para registrarse" },
                 style = TextStyle(textDecoration = TextDecoration.Underline)
             )
 
-            //Link de recuperación
             Text(
                 text = "¿Olvidaste tu contraseña?",
                 color = PersonalTheme.primaryColor,
                 fontFamily = PersonalTheme.TypeText,
                 fontSize = 12.sp,
                 modifier = Modifier
-                    .clickable { navController.navigate("recover")}
+                    .clickable { navController.navigate("recover") }
                     .semantics { contentDescription = "Link para recuperar contraseña" },
                 style = TextStyle(textDecoration = TextDecoration.Underline)
             )
-
         }
     }
 }
-

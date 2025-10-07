@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
@@ -30,25 +31,37 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.finance.data.UsuariosDao
+import com.example.finance.model.Usuarios
+import com.example.finance.model.UsuariosModel
 import com.example.finance.ui.theme.PersonalTheme
-
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 @Composable
-fun RegisterScreen(navController: NavHostController, usuariosPredeterminados: SnapshotStateList<Pair<String, String>>, modifier: Modifier = Modifier) {
-    var NewUser by remember { mutableStateOf("") }
-    var NewPassword by remember { mutableStateOf("") }
-    var RepeatPassword by remember { mutableStateOf("") }
+fun RegisterScreen(
+    navController: NavHostController,
+    usuarioDao: UsuariosDao,
+    modifier: Modifier = Modifier,
+    viewModel: UsuariosModel = viewModel(),
+) {
+    var newUser by remember { mutableStateOf("") }
+    var newPassword by remember { mutableStateOf("") }
+    var repeatPassword by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(PersonalTheme.backgroundPrimary)
             .padding(24.dp)
             .semantics { contentDescription = "Pantalla de registro" },
         verticalArrangement = Arrangement.Center
-    )
-    {
-        //Mensaje principal de la pantalla de ´recuperacion
+    ) {
         Text(
             text = "Registro de usuario",
             color = PersonalTheme.primaryColor,
@@ -57,12 +70,13 @@ fun RegisterScreen(navController: NavHostController, usuariosPredeterminados: Sn
             modifier = Modifier.padding(bottom = 32.dp)
         )
 
+        // Campo nombre de usuario
         OutlinedTextField(
-            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = PersonalTheme.primaryColor),
-            value = NewUser,
-            onValueChange = { NewUser = it },
-            label = { Text("nombre de usuario") },
+            value = newUser,
+            onValueChange = { newUser = it },
+            label = { Text("Nombre de usuario") },
             singleLine = true,
+            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = PersonalTheme.primaryColor),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 24.dp)
@@ -70,64 +84,56 @@ fun RegisterScreen(navController: NavHostController, usuariosPredeterminados: Sn
             shape = RoundedCornerShape(16.dp),
         )
 
-        //inpun datos password
+        // Campo contraseña
         OutlinedTextField(
-            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = PersonalTheme.primaryColor),
-            value = NewPassword,
-            onValueChange = { NewPassword = it },
+            value = newPassword,
+            onValueChange = { newPassword = it },
             label = { Text("Crear contraseña") },
             singleLine = true,
             visualTransformation = PasswordVisualTransformation(),
+            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = PersonalTheme.primaryColor),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 24.dp)
                 .semantics { contentDescription = "Campo para crear tu contraseña" },
             shape = RoundedCornerShape(16.dp),
         )
+
+        // Campo repetir contraseña
         OutlinedTextField(
-            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = PersonalTheme.primaryColor),
-            value = RepeatPassword,
-            onValueChange = { RepeatPassword = it },
+            value = repeatPassword,
+            onValueChange = { repeatPassword = it },
             label = { Text("Repite la contraseña") },
             singleLine = true,
             visualTransformation = PasswordVisualTransformation(),
+            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = PersonalTheme.primaryColor),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 24.dp)
                 .semantics { contentDescription = "Campo para repetir tu nueva contraseña" },
             shape = RoundedCornerShape(16.dp),
         )
-        val context = LocalContext.current
-        //Boton de login
-        Button(
-            {
-                val verificarUsuario = usuariosPredeterminados.any { it.first == NewUser }
 
-                try {
-                    if (NewUser.isBlank() || NewPassword.isBlank() || RepeatPassword.isBlank()) {
-                        throw Exception("Debes Completar todos los datos")
+        // Botón de registro
+        Button(
+            onClick = {
+                coroutineScope.launch {
+                    val usuarioExistente = withContext(Dispatchers.IO) {
+                        usuarioDao.buscarPorNombre(newUser)
                     }
-                    if (!verificarUsuario) {
-                        if (NewPassword == RepeatPassword) {
-                            usuariosPredeterminados.add(NewUser to NewPassword)
+                    if (usuarioExistente == null) {
+                        if (newPassword == repeatPassword) {
+                            withContext(Dispatchers.IO) {
+                                usuarioDao.insertar(Usuarios(name = newUser, password = newPassword))
+                            }
                             Toast.makeText(context, "Registro exitoso", Toast.LENGTH_SHORT).show()
                             navController.navigate("login")
                         } else {
-                            Toast.makeText(
-                                context,
-                                "Las contraseñas no coinciden",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            Toast.makeText(context, "Las contraseñas no coinciden", Toast.LENGTH_SHORT).show()
                         }
                     } else {
-                        Toast.makeText(
-                            context,
-                            "Este usuario ya esta registrado",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        Toast.makeText(context, "Usuario ya registrado", Toast.LENGTH_SHORT).show()
                     }
-                }catch (e: Exception) {
-                    Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             },
             modifier = Modifier
@@ -142,22 +148,19 @@ fun RegisterScreen(navController: NavHostController, usuariosPredeterminados: Sn
         ) {
             Text("Registro")
         }
+
         Row(
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            //Link login
             Text(
                 text = "¿Ya estás registrado?",
                 color = PersonalTheme.primaryColor,
                 fontFamily = PersonalTheme.TypeText,
                 fontSize = 12.sp,
-                modifier = Modifier.clickable { navController.navigate("login")},
+                modifier = Modifier.clickable { navController.navigate("login") },
                 style = TextStyle(textDecoration = TextDecoration.Underline)
             )
         }
     }
 }
-
-
