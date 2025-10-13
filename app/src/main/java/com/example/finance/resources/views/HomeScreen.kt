@@ -104,6 +104,7 @@ fun HomeScreen(
                     }
                     if (usuario != null) {
                         Toast.makeText(context, "Bienvenido ${usuario.name}", Toast.LENGTH_SHORT).show()
+                        navController.currentBackStackEntry?.savedStateHandle?.set("usuarioNombre", usuario.name)
                         navController.navigate("Inicio")
                     } else {
                         Toast.makeText(context, "Usuario o contraseña incorrectos", Toast.LENGTH_SHORT).show()
