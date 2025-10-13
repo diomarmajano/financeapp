@@ -45,7 +45,9 @@ dependencies {
     implementation("androidx.room:room-runtime:2.8.0")
     implementation(libs.core.ktx)
     implementation(libs.androidx.junit.ktx)
-    implementation(libs.play.services.maps)   // runtime obligatorio
+    implementation(libs.play.services.maps)
+    implementation(libs.androidx.ui.text)
+    implementation(libs.androidx.foundation)   // runtime obligatorio
     kapt("androidx.room:room-compiler:2.8.0")            // genera AppDatabase_Impl
     implementation("androidx.room:room-ktx:2.8.0")
 

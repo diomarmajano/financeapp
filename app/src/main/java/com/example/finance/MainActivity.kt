@@ -1,5 +1,6 @@
 package com.example.finance
 
+import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -11,6 +12,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.finance.ui.theme.FinanceTheme
 import com.example.finance.resources.views.HomeScreen
 import androidx.navigation.compose.NavHost
@@ -18,11 +21,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.room.Room
 import com.example.finance.data.AppDatabase
+import com.example.finance.data.TransaccionDao
+import com.example.finance.model.TransaccionesModel
 import com.example.finance.model.Usuarios
 import com.example.finance.resources.views.InicioApp
 import com.example.finance.resources.views.MiUbicacion
 import com.example.finance.resources.views.RecoverScreen
 import com.example.finance.resources.views.RegisterScreen
+import com.example.finance.resources.views.TransaccionesView
 import com.example.finance.resources.views.WelcomeScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -36,11 +42,14 @@ class MainActivity : ComponentActivity() {
 
         // Construcción de la base de datos
         val db = Room.databaseBuilder(
-            applicationContext,
-            AppDatabase::class.java,
-            "usuarios_db"
-        ).build()
+                applicationContext,
+                AppDatabase::class.java,
+                "finance_db"
+            ).fallbackToDestructiveMigration(true)
+            .build()
+
         val usuariosDao = db.usuariosDao()
+        val transaccionDao = db.TransaccionDao()
 
         setContent {
             FinanceTheme {
@@ -75,7 +84,17 @@ class MainActivity : ComponentActivity() {
                         composable("register") { RegisterScreen(navController, usuariosDao) }
                         composable("recover") { RecoverScreen(navController, usuariosDao) }
                         composable("welcome") { WelcomeScreen(navController) }
-                        composable("Inicio") { InicioApp(navController) }
+                        composable("Inicio") { backStackEntry ->
+                            val context = LocalContext.current
+                            val nombreUsuario = navController.previousBackStackEntry
+                                ?.savedStateHandle
+                                ?.get<String>("usuarioNombre") ?: "Usuario"
+                            InicioApp(
+                                navController = navController,
+                                usuarioNombre = nombreUsuario,
+                            )
+                        }
+                        composable("Transaccion") { TransaccionesView(navController, transaccionDao) }
                     }
                 }
             }

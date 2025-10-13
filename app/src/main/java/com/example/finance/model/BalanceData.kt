@@ -12,8 +12,8 @@ object PersonalTheme {
 }
 
 object BalanceData {
-    val totalIngresos: Double = 3500.00
-    val totalGastos: Double = 1200.50
+    val totalIngresos: Double = 00.0
+    val totalGastos: Double = 00.0
 
     val balanceTotal: Double = totalIngresos - totalGastos
 
